@@ -1,130 +1,77 @@
-let nextId = 1;
+/**
+ * @typedef {import('../dtos/expense.dto').Expense} Expense
+ * @typedef {import('../dtos/expense.dto').CreateExpenseDto} CreateExpenseDto
+ * @typedef {import('../dtos/expense.dto').PatchExpenseDto} PatchExpenseDto
+ * @typedef {import('../dtos/expense.dto').ExpenseFilters} ExpenseFilters
+ */
+
+const expensesRepository = require('../repositories/expenses.repository');
 
 /**
- * @typedef {Object} Expense
- * @property {number} id
- * @property {number} userId
- * @property {string} spentAt
- * @property {string} title
- * @property {number} amount
- * @property {string} category
- * @property {string} note
+ * @param {ExpenseFilters} [filters={}]
+ * @returns {Promise<Array<Expense>>}
  */
-/** @type {Array<Expense>} */
-let expenses = [];
+const getExpenses = async (filters = {}) => {
+  const expenses = await expensesRepository.getAll(filters);
 
-/**
- * @param {Object} params
- * @param {string} params.userId
- * @param {Array<string>} params.categories
- * @param {string} params.from
- * @param {string} params.to
- * @returns {Array<Expense>}
- */
-const getExpenses = ({
-  userId = '',
-  categories = [],
-  from = '',
-  to = '',
-} = {}) => {
-  if (!userId && !categories.length && !from && !to) {
-    return expenses;
-  }
-
-  return expenses.filter((expense) => {
-    return (
-      (!userId || expense.userId === Number(userId)) &&
-      (!categories.length || categories.includes(expense.category)) &&
-      (!from || expense.spentAt >= from) &&
-      (!to || expense.spentAt <= to)
-    );
-  });
+  return expenses;
 };
 
 /**
  * @param {number} id
- * @returns {Expense | undefined}
+ * @returns {Promise<Expense | undefined>}
  */
-const getExpenseById = (id) => {
-  const expenseObj = expenses.find((expense) => expense.id === id);
+const getExpenseById = async (id) => {
+  const expense = await expensesRepository.getById(id);
 
-  return expenseObj;
+  return expense;
 };
 
 /**
- * @param {Object} params
- * @param {number} params.userId
- * @param {string} params.spentAt
- * @param {string} params.title
- * @param {number} params.amount
- * @param {string} params.category
- * @param {string} params.note
- * @returns {Expense}
+ * @param {CreateExpenseDto} payload
+ * @returns {Promise<Expense | undefined>}
  */
-const createExpense = ({ userId, spentAt, title, amount, category, note }) => {
-  const expense = {
-    id: nextId++,
-    userId,
-    spentAt,
-    title,
-    amount,
-    category,
-    note,
-  };
+const createExpense = async (payload) => {
+  const expense = await expensesRepository.create(payload);
 
-  expenses.push(expense);
+  if (!expense) {
+    return;
+  }
 
   return expense;
 };
 
 /**
  * @param {number} id
- * @returns {Expense | undefined}
+ * @returns {Promise<Expense | undefined>}
  */
-const deleteExpense = (id) => {
-  const expense = getExpenseById(Number(id));
+const deleteExpense = async (id) => {
+  const expense = await expensesRepository.getById(Number(id));
 
   if (!expense) {
     return;
   }
 
-  return expenses.splice(expenses.indexOf(expense), 1);
+  await expensesRepository.remove(Number(id));
+
+  return expense;
 };
 
 /**
  * @param {number} id
- * @param {Object} params
- * @param {string} params.title
- * @param {number} params.amount
- * @param {string} params.category
- * @param {string} params.spentAt
- * @param {string} params.note
- * @returns {Expense | undefined}
+ * @param {PatchExpenseDto} payload
+ * @returns {Promise<Expense | undefined>}
  */
-const patchExpense = (id, { title, amount, category, spentAt, note }) => {
-  const expense = getExpenseById(id);
+const patchExpense = async (id, payload) => {
+  const expense = await expensesRepository.getById(Number(id));
 
   if (!expense) {
     return;
   }
 
-  const newExpense = {
-    ...expense,
-    title: title ?? expense.title,
-    amount: amount ?? expense.amount,
-    category: category ?? expense.category,
-    spentAt: spentAt ?? expense.spentAt,
-    note: note ?? expense.note,
-  };
+  const patchedExpense = await expensesRepository.patch(Number(id), payload);
 
-  expenses.splice(expenses.indexOf(expense), 1, newExpense);
-
-  return newExpense;
-};
-
-const resetExpenses = () => {
-  expenses = [];
-  nextId = 1;
+  return patchedExpense;
 };
 
 module.exports = {
@@ -133,5 +80,4 @@ module.exports = {
   getExpenseById,
   deleteExpense,
   patchExpense,
-  resetExpenses,
 };
