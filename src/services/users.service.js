@@ -1,78 +1,68 @@
-let nextId = 1;
+/**
+ * @typedef {import('../repositories/users.repository').User} User
+ */
+
+const { NotFoundError } = require('../errors/app.errors');
+const usersRepository = require('../repositories/users.repository');
 
 /**
- * @typedef {Object} User
- * @property {number} id
- * @property {string} name
+ * @returns {Promise<User[]>}
  */
-/** @type {Array<User>} */
-let users = [];
-
-/**
- * @returns {Array<User>}
- */
-const getUsers = () => {
-  return users;
+const getUsers = async () => {
+  return usersRepository.getAll();
 };
 
 /**
  * @param {number} id
- * @returns {User | undefined}
+ * @returns {Promise<User>}
  */
-const getUserById = (id) => {
-  const userObj = users.find((user) => user.id === Number(id));
+const getUserById = async (id) => {
+  const user = await usersRepository.getById(id);
 
-  return userObj;
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+
+  return user;
 };
 
 /**
  * @param {string} name
- * @returns {User}
+ * @returns {Promise<User>}
  */
-const createUser = (name) => {
-  const user = { id: nextId++, name };
+const createUser = async (name) => {
+  return usersRepository.create(name);
+};
 
-  users.push(user);
+/**
+ * @param {number} id
+ * @returns {Promise<User>}
+ */
+const deleteUser = async (id) => {
+  const user = await usersRepository.getById(id);
+
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+
+  await usersRepository.remove(id);
 
   return user;
 };
 
 /**
  * @param {number} id
- * @returns {User | undefined}
- */
-const deleteUser = (id) => {
-  const user = getUserById(id);
-
-  if (!user) {
-    return;
-  }
-
-  return users.splice(users.indexOf(user), 1);
-};
-
-/**
- * @param {number} id
  * @param {string} name
- * @returns {User | undefined}
+ * @returns {Promise<User | undefined>}
  */
-const patchUser = (id, name) => {
-  const user = getUserById(id);
+const patchUser = async (id, name) => {
+  const user = await usersRepository.getById(id);
 
   if (!user) {
-    return;
+    throw new NotFoundError('User not found');
   }
 
-  const newUser = { ...user, name };
-
-  users.splice(users.indexOf(user), 1, newUser);
-
-  return newUser;
-};
-
-const resetUsers = () => {
-  users = [];
-  nextId = 1;
+  return usersRepository.patch(id, name);
 };
 
 module.exports = {
@@ -81,5 +71,4 @@ module.exports = {
   getUserById,
   deleteUser,
   patchUser,
-  resetUsers,
 };

@@ -1,12 +1,22 @@
+/**
+ * @typedef {import('express').Request} Request
+ * @typedef {import('express').Response} Response
+ */
+
 const usersService = require('../services/users.service');
+const {
+  parseCreateUserBody,
+  parsePatchUserInput,
+  parseUserIdParam,
+} = require('../validators/users.validator');
 
 /**
  * @param {Request} req
  * @param {Response} res
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const getUsers = (req, res) => {
-  const users = usersService.getUsers();
+const getUsers = async (req, res) => {
+  const users = await usersService.getUsers();
 
   res.json(users);
 };
@@ -14,20 +24,11 @@ const getUsers = (req, res) => {
 /**
  * @param {Request} req
  * @param {Response} res
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const createUser = (req, res) => {
-  const { name } = req.body;
-
-  if (!name) {
-    return res.status(400).json({ error: 'Name is required' });
-  }
-
-  if (typeof name !== 'string') {
-    return res.status(400).json({ error: 'Name must be a string' });
-  }
-
-  const user = usersService.createUser(name);
+const createUser = async (req, res) => {
+  const { name } = parseCreateUserBody(req.body);
+  const user = await usersService.createUser(name);
 
   res.status(201).json(user);
 };
@@ -35,20 +36,10 @@ const createUser = (req, res) => {
 /**
  * @param {Request} req
  * @param {Response} res
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const getUserById = (req, res) => {
-  const { id } = req.params;
-
-  if (!id) {
-    return res.status(400).json({ error: 'ID is required' });
-  }
-
-  const user = usersService.getUserById(id);
-
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
-  }
+const getUserById = async (req, res) => {
+  const user = await usersService.getUserById(parseUserIdParam(req.params));
 
   res.json(user);
 };
@@ -56,50 +47,22 @@ const getUserById = (req, res) => {
 /**
  * @param {Request} req
  * @param {Response} res
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const deleteUser = (req, res) => {
-  const { id } = req.params;
+const deleteUser = async (req, res) => {
+  await usersService.deleteUser(parseUserIdParam(req.params));
 
-  if (!id) {
-    return res.status(400).json({ error: 'ID is required' });
-  }
-
-  const user = usersService.deleteUser(id);
-
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
-  }
-
-  return res.sendStatus(204);
+  res.sendStatus(204);
 };
 
 /**
  * @param {Request} req
  * @param {Response} res
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const patchUser = (req, res) => {
-  const { id } = req.params;
-  const { name } = req.body;
-
-  if (!id) {
-    return res.status(400).json({ error: 'ID is required' });
-  }
-
-  if (!name) {
-    return res.status(400).json({ error: 'Name is required' });
-  }
-
-  if (typeof name !== 'string') {
-    return res.status(400).json({ error: 'Name must be a string' });
-  }
-
-  const user = usersService.patchUser(id, name);
-
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
-  }
+const patchUser = async (req, res) => {
+  const { id, name } = parsePatchUserInput(req.params, req.body);
+  const user = await usersService.patchUser(id, name);
 
   res.json(user);
 };

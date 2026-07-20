@@ -1,19 +1,25 @@
+/**
+ * @typedef {import('express').Request} Request
+ * @typedef {import('express').Response} Response
+ */
+
 const expensesService = require('../services/expenses.service');
-const usersService = require('../services/users.service');
+const {
+  parseExpenseFilters,
+  parseCreateExpenseBody,
+  parsePatchExpenseInput,
+  parseExpenseIdParam,
+} = require('../validators/expenses.validator');
 
 /**
  * @param {Request} req
  * @param {Response} res
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const getExpenses = (req, res) => {
-  const { userId = '', categories = [], from = '', to = '' } = req.query;
-  const expenses = expensesService.getExpenses({
-    userId,
-    categories,
-    from,
-    to,
-  });
+const getExpenses = async (req, res) => {
+  const expenses = await expensesService.getExpenses(
+    parseExpenseFilters(req.query),
+  );
 
   res.json(expenses);
 };
@@ -21,45 +27,12 @@ const getExpenses = (req, res) => {
 /**
  * @param {Request} req
  * @param {Response} res
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const createExpense = (req, res) => {
-  const { userId, spentAt, title, amount, category, note = '' } = req.body;
-
-  if (!userId) {
-    return res.status(400).json({ error: 'User ID is required' });
-  }
-
-  if (!spentAt) {
-    return res.status(400).json({ error: 'Spent at is required' });
-  }
-
-  if (!title) {
-    return res.status(400).json({ error: 'Title is required' });
-  }
-
-  if (!amount) {
-    return res.status(400).json({ error: 'Amount is required' });
-  }
-
-  if (!category) {
-    return res.status(400).json({ error: 'Category is required' });
-  }
-
-  const user = usersService.getUserById(userId);
-
-  if (!user) {
-    return res.status(400).json({ error: 'User not found' });
-  }
-
-  const expense = expensesService.createExpense({
-    userId,
-    spentAt,
-    title,
-    amount,
-    category,
-    note,
-  });
+const createExpense = async (req, res) => {
+  const expense = await expensesService.createExpense(
+    parseCreateExpenseBody(req.body),
+  );
 
   res.status(201).json(expense);
 };
@@ -67,20 +40,12 @@ const createExpense = (req, res) => {
 /**
  * @param {Request} req
  * @param {Response} res
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const getExpenseById = (req, res) => {
-  const { id } = req.params;
-
-  if (!id) {
-    return res.status(400).json({ error: 'ID is required' });
-  }
-
-  const expense = expensesService.getExpenseById(Number(id));
-
-  if (!expense) {
-    return res.status(404).json({ error: 'Expense not found' });
-  }
+const getExpenseById = async (req, res) => {
+  const expense = await expensesService.getExpenseById(
+    parseExpenseIdParam(req.params),
+  );
 
   res.json(expense);
 };
@@ -88,51 +53,24 @@ const getExpenseById = (req, res) => {
 /**
  * @param {Request} req
  * @param {Response} res
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const deleteExpense = (req, res) => {
-  const { id } = req.params;
+const deleteExpense = async (req, res) => {
+  await expensesService.deleteExpense(parseExpenseIdParam(req.params));
 
-  if (!id) {
-    return res.status(400).json({ error: 'ID is required' });
-  }
-
-  const expense = expensesService.deleteExpense(Number(id));
-
-  if (!expense) {
-    return res.status(404).json({ error: 'Expense not found' });
-  }
-
-  return res.sendStatus(204);
+  res.sendStatus(204);
 };
 
 /**
  * @param {Request} req
  * @param {Response} res
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const patchExpense = (req, res) => {
-  const { id } = req.params;
+const patchExpense = async (req, res) => {
+  const { id, payload } = parsePatchExpenseInput(req.params, req.body);
+  const expense = await expensesService.patchExpense(id, payload);
 
-  if (!id) {
-    return res.status(400).json({ error: 'ID is required' });
-  }
-
-  const { title, amount, category, spentAt, note } = req.body;
-
-  const expense = expensesService.patchExpense(Number(id), {
-    title,
-    amount,
-    category,
-    spentAt,
-    note,
-  });
-
-  if (!expense) {
-    return res.status(404).json({ error: 'Expense not found' });
-  }
-
-  return res.json(expense);
+  res.json(expense);
 };
 
 module.exports = {
