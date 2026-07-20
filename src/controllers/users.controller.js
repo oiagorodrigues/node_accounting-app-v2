@@ -1,12 +1,17 @@
+/**
+ * @typedef {import('express').Request} Request
+ * @typedef {import('express').Response} Response
+ */
+
 const usersService = require('../services/users.service');
 
 /**
  * @param {Request} req
  * @param {Response} res
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const getUsers = (req, res) => {
-  const users = usersService.getUsers();
+const getUsers = async (req, res) => {
+  const users = await usersService.getUsers();
 
   res.json(users);
 };
@@ -14,20 +19,30 @@ const getUsers = (req, res) => {
 /**
  * @param {Request} req
  * @param {Response} res
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const createUser = (req, res) => {
+const createUser = async (req, res) => {
   const { name } = req.body;
 
   if (!name) {
-    return res.status(400).json({ error: 'Name is required' });
+    res.status(400).json({ error: 'Name is required' });
+
+    return;
   }
 
   if (typeof name !== 'string') {
-    return res.status(400).json({ error: 'Name must be a string' });
+    res.status(400).json({ error: 'Name must be a string' });
+
+    return;
   }
 
-  const user = usersService.createUser(name);
+  const user = await usersService.createUser(name);
+
+  if (!user) {
+    res.status(404).json({ error: 'User not found' });
+
+    return;
+  }
 
   res.status(201).json(user);
 };
@@ -35,19 +50,23 @@ const createUser = (req, res) => {
 /**
  * @param {Request} req
  * @param {Response} res
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const getUserById = (req, res) => {
+const getUserById = async (req, res) => {
   const { id } = req.params;
 
   if (!id) {
-    return res.status(400).json({ error: 'ID is required' });
+    res.status(400).json({ error: 'ID is required' });
+
+    return;
   }
 
-  const user = usersService.getUserById(id);
+  const user = await usersService.getUserById(Number(id));
 
   if (!user) {
-    return res.status(404).json({ error: 'User not found' });
+    res.status(404).json({ error: 'User not found' });
+
+    return;
   }
 
   res.json(user);
@@ -56,49 +75,61 @@ const getUserById = (req, res) => {
 /**
  * @param {Request} req
  * @param {Response} res
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const deleteUser = (req, res) => {
+const deleteUser = async (req, res) => {
   const { id } = req.params;
 
   if (!id) {
-    return res.status(400).json({ error: 'ID is required' });
+    res.status(400).json({ error: 'ID is required' });
+
+    return;
   }
 
-  const user = usersService.deleteUser(id);
+  const user = await usersService.deleteUser(Number(id));
 
   if (!user) {
-    return res.status(404).json({ error: 'User not found' });
+    res.status(404).json({ error: 'User not found' });
+
+    return;
   }
 
-  return res.sendStatus(204);
+  res.sendStatus(204);
 };
 
 /**
  * @param {Request} req
  * @param {Response} res
- * @returns {void}
+ * @returns {Promise<void>}
  */
-const patchUser = (req, res) => {
+const patchUser = async (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
 
   if (!id) {
-    return res.status(400).json({ error: 'ID is required' });
+    res.status(400).json({ error: 'ID is required' });
+
+    return;
   }
 
   if (!name) {
-    return res.status(400).json({ error: 'Name is required' });
+    res.status(400).json({ error: 'Name is required' });
+
+    return;
   }
 
   if (typeof name !== 'string') {
-    return res.status(400).json({ error: 'Name must be a string' });
+    res.status(400).json({ error: 'Name must be a string' });
+
+    return;
   }
 
-  const user = usersService.patchUser(id, name);
+  const user = await usersService.patchUser(Number(id), name);
 
   if (!user) {
-    return res.status(404).json({ error: 'User not found' });
+    res.status(404).json({ error: 'User not found' });
+
+    return;
   }
 
   res.json(user);

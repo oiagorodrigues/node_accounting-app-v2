@@ -1,78 +1,69 @@
-let nextId = 1;
+/**
+ * @typedef {import('../repositories/users.repository').User} User
+ */
+
+const usersRepository = require('../repositories/users.repository');
 
 /**
- * @typedef {Object} User
- * @property {number} id
- * @property {string} name
+ * @returns {Promise<User[]>}
  */
-/** @type {Array<User>} */
-let users = [];
+const getUsers = async () => {
+  const users = await usersRepository.getAll();
 
-/**
- * @returns {Array<User>}
- */
-const getUsers = () => {
   return users;
 };
 
 /**
  * @param {number} id
- * @returns {User | undefined}
+ * @returns {Promise<User | undefined>}
  */
-const getUserById = (id) => {
-  const userObj = users.find((user) => user.id === Number(id));
+const getUserById = async (id) => {
+  const user = await usersRepository.getById(id);
 
-  return userObj;
+  return user;
 };
 
 /**
  * @param {string} name
- * @returns {User}
+ * @returns {Promise<User | undefined>}
  */
-const createUser = (name) => {
-  const user = { id: nextId++, name };
-
-  users.push(user);
+const createUser = async (name) => {
+  const user = await usersRepository.create(name);
 
   return user;
 };
 
 /**
  * @param {number} id
- * @returns {User | undefined}
+ * @returns {Promise<User | undefined>}
  */
-const deleteUser = (id) => {
-  const user = getUserById(id);
+const deleteUser = async (id) => {
+  const user = await usersRepository.getById(id);
 
   if (!user) {
     return;
   }
 
-  return users.splice(users.indexOf(user), 1);
+  const removedUser = await usersRepository.remove(id);
+
+  return removedUser;
 };
 
 /**
  * @param {number} id
  * @param {string} name
- * @returns {User | undefined}
+ * @returns {Promise<User | undefined>}
  */
-const patchUser = (id, name) => {
-  const user = getUserById(id);
+const patchUser = async (id, name) => {
+  const user = await usersRepository.getById(id);
 
   if (!user) {
     return;
   }
 
-  const newUser = { ...user, name };
-
-  users.splice(users.indexOf(user), 1, newUser);
+  const newUser = await usersRepository.patch(id, name);
 
   return newUser;
-};
-
-const resetUsers = () => {
-  users = [];
-  nextId = 1;
 };
 
 module.exports = {
@@ -81,5 +72,4 @@ module.exports = {
   getUserById,
   deleteUser,
   patchUser,
-  resetUsers,
 };
