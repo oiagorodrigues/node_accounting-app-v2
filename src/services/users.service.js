@@ -2,51 +2,52 @@
  * @typedef {import('../repositories/users.repository').User} User
  */
 
+const { NotFoundError } = require('../errors/app.errors');
 const usersRepository = require('../repositories/users.repository');
 
 /**
  * @returns {Promise<User[]>}
  */
 const getUsers = async () => {
-  const users = await usersRepository.getAll();
-
-  return users;
+  return usersRepository.getAll();
 };
 
 /**
  * @param {number} id
- * @returns {Promise<User | undefined>}
+ * @returns {Promise<User>}
  */
 const getUserById = async (id) => {
   const user = await usersRepository.getById(id);
+
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
 
   return user;
 };
 
 /**
  * @param {string} name
- * @returns {Promise<User | undefined>}
+ * @returns {Promise<User>}
  */
 const createUser = async (name) => {
-  const user = await usersRepository.create(name);
-
-  return user;
+  return usersRepository.create(name);
 };
 
 /**
  * @param {number} id
- * @returns {Promise<User | undefined>}
+ * @returns {Promise<User>}
  */
 const deleteUser = async (id) => {
   const user = await usersRepository.getById(id);
 
   if (!user) {
-    return;
+    throw new NotFoundError('User not found');
   }
 
-  const removedUser = await usersRepository.remove(id);
+  await usersRepository.remove(id);
 
-  return removedUser;
+  return user;
 };
 
 /**
@@ -58,12 +59,10 @@ const patchUser = async (id, name) => {
   const user = await usersRepository.getById(id);
 
   if (!user) {
-    return;
+    throw new NotFoundError('User not found');
   }
 
-  const newUser = await usersRepository.patch(id, name);
-
-  return newUser;
+  return usersRepository.patch(id, name);
 };
 
 module.exports = {

@@ -6,7 +6,8 @@
  * @typedef {import('../mappers/expense.mapper').ExpenseRow} ExpenseRow
  */
 
-const { db } = require('../utils/db');
+const { DataAccessError } = require('../errors/app.errors');
+const { query } = require('../utils/db');
 const {
   ExpenseDtoFieldToColumn,
   toExpense,
@@ -43,20 +44,16 @@ const getAll = async ({ userId, categories, from, to } = {}) => {
     values.push(to);
   }
 
-  let query = 'SELECT * FROM expenses';
+  let sql = 'SELECT * FROM expenses';
 
   if (conditions.length > 0) {
-    query += ` WHERE ${conditions.join(' AND ')}`;
+    sql += ` WHERE ${conditions.join(' AND ')}`;
   }
 
-  try {
-    /** @type {import('pg').QueryResult<ExpenseRow>} */
-    const result = await db.query(query, values);
+  /** @type {import('pg').QueryResult<ExpenseRow>} */
+  const result = await query(sql, values);
 
-    return result.rows.map(toExpense);
-  } catch (error) {
-    throw new Error(`Failed to get all expenses: ${error}`);
-  }
+  return result.rows.map(toExpense);
 };
 
 /**
@@ -64,40 +61,38 @@ const getAll = async ({ userId, categories, from, to } = {}) => {
  * @returns {Promise<Expense | undefined>}
  */
 const getById = async (id) => {
-  try {
-    /** @type {import('pg').QueryResult<ExpenseRow>} */
-    const result = await db.query('SELECT * FROM expenses WHERE id = $1', [id]);
+  /** @type {import('pg').QueryResult<ExpenseRow>} */
+  const result = await query('SELECT * FROM expenses WHERE id = $1', [id]);
 
-    return result.rows[0] ? toExpense(result.rows[0]) : undefined;
-  } catch (error) {
-    throw new Error(`Failed to get expense by id: ${error}`);
-  }
+  return result.rows[0] ? toExpense(result.rows[0]) : undefined;
 };
 
 /**
  * @param {CreateExpenseDto} payload
- * @returns {Promise<Expense | undefined>}
+ * @returns {Promise<Expense>}
  */
 const create = async (payload) => {
-  try {
-    /** @type {import('pg').QueryResult<ExpenseRow>} */
-    const result = await db.query(
-      /* eslint-disable-next-line max-len */
-      'INSERT INTO expenses (user_id, title, amount, category, spent_at, note) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [
-        payload.userId,
-        payload.title,
-        payload.amount,
-        payload.category,
-        payload.spentAt,
-        payload.note ?? '',
-      ],
-    );
+  /** @type {import('pg').QueryResult<ExpenseRow>} */
+  const result = await query(
+    /* eslint-disable-next-line max-len */
+    'INSERT INTO expenses (user_id, title, amount, category, spent_at, note) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+    [
+      payload.userId,
+      payload.title,
+      payload.amount,
+      payload.category,
+      payload.spentAt,
+      payload.note ?? '',
+    ],
+  );
 
-    return result.rows[0] ? toExpense(result.rows[0]) : undefined;
-  } catch (error) {
-    throw new Error(`Failed to create expense: ${error}`);
+  const row = result.rows[0];
+
+  if (!row) {
+    throw new DataAccessError('Failed to create expense: no row returned');
   }
+
+  return toExpense(row);
 };
 
 /**
@@ -122,17 +117,13 @@ const patch = async (id, payload) => {
 
   values.push(id);
 
-  try {
-    /** @type {import('pg').QueryResult<ExpenseRow>} */
-    const result = await db.query(
-      `UPDATE expenses SET ${updates.join(', ')} WHERE id = $${values.length} RETURNING *`,
-      values,
-    );
+  /** @type {import('pg').QueryResult<ExpenseRow>} */
+  const result = await query(
+    `UPDATE expenses SET ${updates.join(', ')} WHERE id = $${values.length} RETURNING *`,
+    values,
+  );
 
-    return result.rows[0] ? toExpense(result.rows[0]) : undefined;
-  } catch (error) {
-    throw new Error(`Failed to patch expense: ${error}`);
-  }
+  return result.rows[0] ? toExpense(result.rows[0]) : undefined;
 };
 
 /**
@@ -140,17 +131,12 @@ const patch = async (id, payload) => {
  * @returns {Promise<Expense | undefined>}
  */
 const remove = async (id) => {
-  try {
-    /** @type {import('pg').QueryResult<ExpenseRow>} */
-    const result = await db.query(
-      'DELETE FROM expenses WHERE id = $1 RETURNING *',
-      [id],
-    );
+  /** @type {import('pg').QueryResult<ExpenseRow>} */
+  const result = await query('DELETE FROM expenses WHERE id = $1 RETURNING *', [
+    id,
+  ]);
 
-    return result.rows[0] ? toExpense(result.rows[0]) : undefined;
-  } catch (error) {
-    throw new Error(`Failed to delete expense: ${error}`);
-  }
+  return result.rows[0] ? toExpense(result.rows[0]) : undefined;
 };
 
 module.exports = {

@@ -5,51 +5,55 @@
  * @typedef {import('../dtos/expense.dto').ExpenseFilters} ExpenseFilters
  */
 
+const { ValidationError, NotFoundError } = require('../errors/app.errors');
 const expensesRepository = require('../repositories/expenses.repository');
+const usersRepository = require('../repositories/users.repository');
 
 /**
  * @param {ExpenseFilters} [filters={}]
  * @returns {Promise<Array<Expense>>}
  */
 const getExpenses = async (filters = {}) => {
-  const expenses = await expensesRepository.getAll(filters);
-
-  return expenses;
+  return expensesRepository.getAll(filters);
 };
 
 /**
  * @param {number} id
- * @returns {Promise<Expense | undefined>}
+ * @returns {Promise<Expense>}
  */
 const getExpenseById = async (id) => {
   const expense = await expensesRepository.getById(id);
 
-  return expense;
-};
-
-/**
- * @param {CreateExpenseDto} payload
- * @returns {Promise<Expense | undefined>}
- */
-const createExpense = async (payload) => {
-  const expense = await expensesRepository.create(payload);
-
   if (!expense) {
-    return;
+    throw new NotFoundError('Expense not found');
   }
 
   return expense;
 };
 
 /**
+ * @param {CreateExpenseDto} payload
+ * @returns {Promise<Expense>}
+ */
+const createExpense = async (payload) => {
+  const user = await usersRepository.getById(payload.userId);
+
+  if (!user) {
+    throw new ValidationError('User not found');
+  }
+
+  return expensesRepository.create(payload);
+};
+
+/**
  * @param {number} id
- * @returns {Promise<Expense | undefined>}
+ * @returns {Promise<Expense>}
  */
 const deleteExpense = async (id) => {
   const expense = await expensesRepository.getById(Number(id));
 
   if (!expense) {
-    return;
+    throw new NotFoundError('Expense not found');
   }
 
   await expensesRepository.remove(Number(id));
@@ -66,12 +70,10 @@ const patchExpense = async (id, payload) => {
   const expense = await expensesRepository.getById(Number(id));
 
   if (!expense) {
-    return;
+    throw new NotFoundError('Expense not found');
   }
 
-  const patchedExpense = await expensesRepository.patch(Number(id), payload);
-
-  return patchedExpense;
+  return expensesRepository.patch(Number(id), payload);
 };
 
 module.exports = {
