@@ -3,7 +3,10 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const db = new pg.Client({
+// Creating a pool of connections to the database
+// So we can reuse the connections and avoid
+// creating a new connection for each request
+const db = new pg.Pool({
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT || 5432),
   user: process.env.DB_USER,
