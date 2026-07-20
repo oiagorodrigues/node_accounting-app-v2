@@ -19,7 +19,7 @@
     "close-with-grace": "2.5.0",
     "cors": "^2.8.5",
     "dotenv": "17.4.2",
-    "express": "^4.19.2",
+    "express": "^5.2.1",
     "pg": "8.22.0"
   },
   "devDependencies": {
@@ -36,5 +36,8 @@
   },
   "mateAcademy": {
     "projectType": "javascript"
+  },
+  "jest": {
+    "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"]
   }
 }
