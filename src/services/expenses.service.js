@@ -5,7 +5,7 @@
  * @typedef {import('../dtos/expense.dto').ExpenseFilters} ExpenseFilters
  */
 
-const { ValidationError, NotFoundError } = require('../errors/app.errors');
+const { NotFoundError } = require('../errors/app.errors');
 const expensesRepository = require('../repositories/expenses.repository');
 const usersRepository = require('../repositories/users.repository');
 
@@ -18,7 +18,7 @@ const getExpenses = async (filters = {}) => {
 };
 
 /**
- * @param {number} id
+ * @param {string} id
  * @returns {Promise<Expense>}
  */
 const getExpenseById = async (id) => {
@@ -39,41 +39,41 @@ const createExpense = async (payload) => {
   const user = await usersRepository.getById(payload.userId);
 
   if (!user) {
-    throw new ValidationError('User not found');
+    throw new NotFoundError('User not found');
   }
 
   return expensesRepository.create(payload);
 };
 
 /**
- * @param {number} id
+ * @param {string} id
  * @returns {Promise<Expense>}
  */
 const deleteExpense = async (id) => {
-  const expense = await expensesRepository.getById(Number(id));
+  const expense = await expensesRepository.getById(id);
 
   if (!expense) {
     throw new NotFoundError('Expense not found');
   }
 
-  await expensesRepository.remove(Number(id));
+  await expensesRepository.remove(id);
 
   return expense;
 };
 
 /**
- * @param {number} id
+ * @param {string} id
  * @param {PatchExpenseDto} payload
  * @returns {Promise<Expense | undefined>}
  */
 const patchExpense = async (id, payload) => {
-  const expense = await expensesRepository.getById(Number(id));
+  const expense = await expensesRepository.getById(id);
 
   if (!expense) {
     throw new NotFoundError('Expense not found');
   }
 
-  return expensesRepository.patch(Number(id), payload);
+  return expensesRepository.patch(id, payload);
 };
 
 module.exports = {

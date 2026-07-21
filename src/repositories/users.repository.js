@@ -1,6 +1,6 @@
 /**
  * @typedef {Object} User
- * @property {number} id
+ * @property {string} id
  * @property {string} name
  */
 
@@ -18,7 +18,7 @@ const getAll = async () => {
 };
 
 /**
- * @param {number} id
+ * @param {string} id
  * @returns {Promise<User | undefined>}
  */
 const getById = async (id) => {
@@ -49,7 +49,7 @@ const create = async (name) => {
 };
 
 /**
- * @param {number} id
+ * @param {string} id
  * @param {string} name
  * @returns {Promise<User | undefined>}
  */
@@ -64,7 +64,7 @@ const patch = async (id, name) => {
 };
 
 /**
- * @param {number} id
+ * @param {string} id
  * @returns {Promise<User | undefined>}
  */
 const remove = async (id) => {

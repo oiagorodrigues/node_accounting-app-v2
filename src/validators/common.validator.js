@@ -1,41 +1,87 @@
 'use strict';
 
 const { ValidationError } = require('../errors/app.errors');
+const { fieldErrors } = require('./utils');
+
+/**
+ * @typedef {{ ok: true, payload: T } | { ok: false, errors: Record<string, string[]> }} ValidationResult
+ * @template T
+ */
 
 /**
  * @param {unknown} value
  * @param {string} message
- * @returns {void}
+ * @returns {string | undefined}
  */
-const assertRequired = (value, message) => {
+const validateRequired = (value, message) => {
   if (value === undefined || value === null || value === '') {
-    throw new ValidationError(message);
+    return message;
   }
 };
 
 /**
  * @param {unknown} value
  * @param {string} message
- * @returns {asserts value is string}
+ * @returns {string | undefined}
  */
-const assertString = (value, message) => {
+const validateString = (value, message) => {
   if (typeof value !== 'string') {
-    throw new ValidationError(message);
+    return message;
+  }
+};
+
+/**
+ * @param {string} value
+ * @param {string} message
+ * @returns {string | undefined}
+ */
+const validateUuid = (value, message) => {
+  if (
+    !/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+      value,
+    )
+  ) {
+    return message;
   }
 };
 
 /**
  * @param {string | undefined} id
- * @returns {number}
+ * @returns {ValidationResult<string>}
  */
 const parseIdParam = (id) => {
-  assertRequired(id, 'ID is required');
+  const errors = fieldErrors(
+    validateRequired(id, 'ID is required'),
+    validateString(id, 'ID must be a string'),
+    typeof id === 'string'
+      ? validateUuid(id, 'ID must be a valid UUID')
+      : undefined,
+  );
 
-  return Number(id);
+  if (errors) {
+    return { ok: false, errors: { id: errors } };
+  }
+
+  return { ok: true, payload: /** @type {string} */ (id) };
+};
+
+/**
+ * @template T
+ * @param {ValidationResult<T>} result
+ * @returns {T}
+ */
+const assertValid = (result) => {
+  if (!result.ok) {
+    throw new ValidationError('Validation error', result.errors);
+  }
+
+  return result.payload;
 };
 
 module.exports = {
-  assertRequired,
-  assertString,
+  validateRequired,
+  validateString,
+  validateUuid,
   parseIdParam,
+  assertValid,
 };

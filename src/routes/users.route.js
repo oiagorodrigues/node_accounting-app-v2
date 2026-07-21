@@ -1,7 +1,9 @@
+'use strict';
+
 const { Router } = require('express');
 const usersController = require('../controllers/users.controller');
 
-const usersRouter = new Router();
+const usersRouter = Router();
 
 usersRouter.get('/', usersController.getUsers);
 usersRouter.post('/', usersController.createUser);

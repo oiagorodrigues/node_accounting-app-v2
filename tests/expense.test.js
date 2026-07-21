@@ -3,6 +3,8 @@
 const supertest = require('supertest');
 const { createServer } = require('../src/createServer');
 
+const UNKNOWN_UUID = '00000000-0000-4000-8000-000000000000';
+
 describe('Expense', () => {
   let server;
   let api;
@@ -37,7 +39,7 @@ describe('Expense', () => {
 
       expect(response.body).toEqual(
         expect.objectContaining({
-          id: expect.any(Number),
+          id: expect.any(String),
           ...expenseData,
         }),
       );
@@ -49,7 +51,7 @@ describe('Expense', () => {
 
     it('should return 400 if user not found', async () => {
       const expenseData = {
-        userId: 1,
+        userId: UNKNOWN_UUID,
         spentAt: '2022-10-19T11:01:43.462Z',
         title: 'Buy a new laptop',
         amount: 999,
@@ -57,7 +59,7 @@ describe('Expense', () => {
         note: 'I need a new laptop',
       };
 
-      await api.post('/expenses').send(expenseData).expect(400);
+      await api.post('/expenses').send(expenseData).expect(404);
     });
   });
 
@@ -261,7 +263,7 @@ describe('Expense', () => {
     });
 
     it('should return 404 if expense not found', async () => {
-      await api.get('/expenses/1').expect(404);
+      await api.get(`/expenses/${UNKNOWN_UUID}`).expect(404);
     });
   });
 
@@ -302,7 +304,7 @@ describe('Expense', () => {
     });
 
     it('should return 404 if expense not found', async () => {
-      await api.patch('/expenses/1').send({}).expect(404);
+      await api.patch(`/expenses/${UNKNOWN_UUID}`).send({}).expect(404);
     });
   });
 
@@ -333,7 +335,7 @@ describe('Expense', () => {
     });
 
     it('should return 404 if expense not found', async () => {
-      await api.delete('/expenses/1').expect(404);
+      await api.delete(`/expenses/${UNKNOWN_UUID}`).expect(404);
     });
   });
 });

@@ -1,42 +1,79 @@
 'use strict';
 
+/**
+ * @typedef {import('./common.validator').ValidationResult<{ name: string }>} CreateUserResult
+ * @typedef {import('./common.validator').ValidationResult<{ id: string, name: string }>} PatchUserResult
+ * @typedef {import('./common.validator').ValidationResult<string>} UserIdResult
+ */
+
 const {
-  assertRequired,
-  assertString,
+  validateRequired,
+  validateString,
   parseIdParam,
 } = require('./common.validator');
+const { fieldErrors, compactErrors } = require('./utils');
 
 /**
  * @param {{ name?: unknown }} body
- * @returns {{ name: string }}
+ * @returns {CreateUserResult}
  */
 const parseCreateUserBody = (body) => {
   const { name } = body;
 
-  assertRequired(name, 'Name is required');
-  assertString(name, 'Name must be a string');
+  const errors = compactErrors({
+    name: fieldErrors(
+      validateRequired(name, 'Name is required'),
+      validateString(name, 'Name must be a string'),
+    ),
+  });
 
-  return { name };
+  if (errors) {
+    return { ok: false, errors };
+  }
+
+  return {
+    ok: true,
+    payload: { name: /** @type {string} */ (name) },
+  };
 };
 
 /**
  * @param {{ id?: string }} params
  * @param {{ name?: unknown }} body
- * @returns {{ id: number, name: string }}
+ * @returns {PatchUserResult}
  */
 const parsePatchUserInput = (params, body) => {
-  const id = parseIdParam(params.id);
+  const idResult = parseIdParam(params.id);
   const { name } = body;
 
-  assertRequired(name, 'Name is required');
-  assertString(name, 'Name must be a string');
+  const errors = compactErrors({
+    id: idResult.ok ? undefined : idResult.errors.id,
+    name: fieldErrors(
+      validateRequired(name, 'Name is required'),
+      validateString(name, 'Name must be a string'),
+    ),
+  });
 
-  return { id, name };
+  if (errors) {
+    return { ok: false, errors };
+  }
+
+  if (!idResult.ok) {
+    return idResult;
+  }
+
+  return {
+    ok: true,
+    payload: {
+      id: idResult.payload,
+      name: /** @type {string} */ (name),
+    },
+  };
 };
 
 /**
  * @param {{ id?: string }} params
- * @returns {number}
+ * @returns {UserIdResult}
  */
 const parseUserIdParam = (params) => parseIdParam(params.id);
 
