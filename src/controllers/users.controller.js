@@ -9,6 +9,7 @@ const {
   parsePatchUserInput,
   parseUserIdParam,
 } = require('../validators/users.validator');
+const { assertValid } = require('../validators/common.validator');
 
 /**
  * @param {Request} req
@@ -27,7 +28,7 @@ const getUsers = async (req, res) => {
  * @returns {Promise<void>}
  */
 const createUser = async (req, res) => {
-  const { name } = parseCreateUserBody(req.body);
+  const { name } = assertValid(parseCreateUserBody(req.body));
   const user = await usersService.createUser(name);
 
   res.status(201).json(user);
@@ -39,7 +40,8 @@ const createUser = async (req, res) => {
  * @returns {Promise<void>}
  */
 const getUserById = async (req, res) => {
-  const user = await usersService.getUserById(parseUserIdParam(req.params));
+  const id = assertValid(parseUserIdParam(req.params));
+  const user = await usersService.getUserById(id);
 
   res.json(user);
 };
@@ -50,7 +52,9 @@ const getUserById = async (req, res) => {
  * @returns {Promise<void>}
  */
 const deleteUser = async (req, res) => {
-  await usersService.deleteUser(parseUserIdParam(req.params));
+  const id = assertValid(parseUserIdParam(req.params));
+
+  await usersService.deleteUser(id);
 
   res.sendStatus(204);
 };
@@ -61,7 +65,9 @@ const deleteUser = async (req, res) => {
  * @returns {Promise<void>}
  */
 const patchUser = async (req, res) => {
-  const { id, name } = parsePatchUserInput(req.params, req.body);
+  const { id, name } = assertValid(
+    parsePatchUserInput(req.params, req.body),
+  );
   const user = await usersService.patchUser(id, name);
 
   res.json(user);

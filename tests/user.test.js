@@ -3,6 +3,8 @@
 const supertest = require('supertest');
 const { createServer } = require('../src/createServer');
 
+const UNKNOWN_UUID = '00000000-0000-4000-8000-000000000000';
+
 describe('User', () => {
   let server;
   let api;
@@ -26,7 +28,7 @@ describe('User', () => {
 
       expect(response.body).toEqual(
         expect.objectContaining({
-          id: expect.any(Number),
+          id: expect.any(String),
           name,
         }),
       );
@@ -80,7 +82,7 @@ describe('User', () => {
 
   describe('getUser', () => {
     it('should return 404 if user does not exist', async () => {
-      await api.get('/users/1').expect(404);
+      await api.get(`/users/${UNKNOWN_UUID}`).expect(404);
     });
 
     it('should return user', async () => {
@@ -107,7 +109,7 @@ describe('User', () => {
   describe('updateUser', () => {
     it('should return 404 if user does not exist', async () => {
       await api
-        .put('/users/1')
+        .patch(`/users/${UNKNOWN_UUID}`)
         .send({
           name: 'John Doe',
         })
@@ -142,7 +144,7 @@ describe('User', () => {
 
   describe('deleteUser', () => {
     it('should return 404 if user does not exist', async () => {
-      await api.delete('/users/1').expect(404);
+      await api.delete(`/users/${UNKNOWN_UUID}`).expect(404);
     });
 
     it('should delete user', async () => {

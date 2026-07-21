@@ -1,7 +1,7 @@
 /**
  * @typedef {Object} ExpenseRow
- * @property {number} id
- * @property {number} user_id
+ * @property {string} id
+ * @property {string} user_id
  * @property {string} title
  * @property {string} amount
  * @property {string} category

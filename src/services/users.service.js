@@ -13,7 +13,7 @@ const getUsers = async () => {
 };
 
 /**
- * @param {number} id
+ * @param {string} id
  * @returns {Promise<User>}
  */
 const getUserById = async (id) => {
@@ -35,7 +35,7 @@ const createUser = async (name) => {
 };
 
 /**
- * @param {number} id
+ * @param {string} id
  * @returns {Promise<User>}
  */
 const deleteUser = async (id) => {
@@ -51,7 +51,7 @@ const deleteUser = async (id) => {
 };
 
 /**
- * @param {number} id
+ * @param {string} id
  * @param {string} name
  * @returns {Promise<User | undefined>}
  */

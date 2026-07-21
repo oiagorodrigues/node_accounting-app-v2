@@ -3,9 +3,9 @@
 const express = require('express');
 const cors = require('cors');
 
-const usersRoutes = require('./routes/users.route');
-const expensesRoutes = require('./routes/expenses.route');
-const { AppError } = require('./errors/app.errors');
+const usersRouter = require('./routes/users.route');
+const expensesRouter = require('./routes/expenses.route');
+const errorsMiddleware = require('./middlewares/errors.middleware');
 
 function createServer() {
   const app = express();
@@ -13,35 +13,10 @@ function createServer() {
   app.use(express.json());
   app.use(cors());
 
-  app.use('/users', usersRoutes);
-  app.use('/expenses', expensesRoutes);
+  app.use('/users', usersRouter);
+  app.use('/expenses', expensesRouter);
 
-  // eslint-disable-next-line no-unused-vars
-  app.use(
-    /**
-     * @param {Error} err
-     * @param {import('express').Request} req
-     * @param {import('express').Response} res
-     * @param {import('express').NextFunction} next
-     */
-    (err, req, res, next) => {
-      // eslint-disable-next-line no-console
-      console.error(err);
-
-      if (err instanceof AppError) {
-        res.status(err.statusCode).json({ error: err.message });
-
-        return;
-      }
-
-      const message =
-        process.env.NODE_ENV === 'production'
-          ? 'Internal Server Error'
-          : err.message;
-
-      res.status(500).json({ error: message });
-    },
-  );
+  app.use(errorsMiddleware);
 
   return app;
 }

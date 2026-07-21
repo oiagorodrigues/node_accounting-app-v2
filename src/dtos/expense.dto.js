@@ -1,7 +1,7 @@
 /**
  * @typedef {Object} Expense
- * @property {number} id
- * @property {number} userId
+ * @property {string} id
+ * @property {string} userId
  * @property {string} spentAt
  * @property {string} title
  * @property {number} amount
@@ -11,7 +11,7 @@
 
 /**
  * @typedef {Object} CreateExpenseDto
- * @property {number} userId
+ * @property {string} userId
  * @property {string} spentAt
  * @property {string} title
  * @property {number} amount
@@ -30,7 +30,7 @@
 
 /**
  * @typedef {Object} ExpenseFilters
- * @property {number} [userId]
+ * @property {string} [userId]
  * @property {string[]} [categories]
  * @property {string} [from]
  * @property {string} [to]

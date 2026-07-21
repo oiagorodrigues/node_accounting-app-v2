@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const expensesController = require('../controllers/expenses.controller');
 
-const expensesRouter = new Router();
+const expensesRouter = Router();
 
 expensesRouter.get('/', expensesController.getExpenses);
 expensesRouter.post('/', expensesController.createExpense);

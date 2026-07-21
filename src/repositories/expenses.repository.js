@@ -57,7 +57,7 @@ const getAll = async ({ userId, categories, from, to } = {}) => {
 };
 
 /**
- * @param {number} id
+ * @param {string} id
  * @returns {Promise<Expense | undefined>}
  */
 const getById = async (id) => {
@@ -96,7 +96,7 @@ const create = async (payload) => {
 };
 
 /**
- * @param {number} id
+ * @param {string} id
  * @param {PatchExpenseDto} payload
  * @returns {Promise<Expense | undefined>}
  */
@@ -127,7 +127,7 @@ const patch = async (id, payload) => {
 };
 
 /**
- * @param {number} id
+ * @param {string} id
  * @returns {Promise<Expense | undefined>}
  */
 const remove = async (id) => {

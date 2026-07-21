@@ -28,9 +28,13 @@ class AppError extends Error {
 class ValidationError extends AppError {
   /**
    * @param {string} message
+   * @param {Record<string, string[]>} [errors]
    */
-  constructor(message) {
+  constructor(message, errors) {
     super(message, 400);
+
+    /** @type {Record<string, string[]> | undefined} */
+    this.errors = errors;
   }
 }
 
