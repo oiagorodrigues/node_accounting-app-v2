@@ -39,6 +39,30 @@ class ValidationError extends AppError {
 }
 
 /**
+ * Used to indicate that the user is not authenticated.
+ */
+class AuthenticationError extends AppError {
+  /**
+   * @param {string} message
+   */
+  constructor(message) {
+    super(message, 401);
+  }
+}
+
+/**
+ * Used to indicate that the user is not authorized to access the resource.
+ */
+class AuthorizationError extends AppError {
+  /**
+   * @param {string} message
+   */
+  constructor(message) {
+    super(message, 403);
+  }
+}
+
+/**
  * Used to indicate that the requested resource was not found.
  * Ex.: User not found, product not found, etc.
  */
@@ -48,6 +72,19 @@ class NotFoundError extends AppError {
    */
   constructor(message) {
     super(message, 404);
+  }
+}
+
+/**
+ * Used to indicate that the request is well-formed but cannot be processed.
+ * Ex.: Business rule violations, duplicate resources, etc.
+ */
+class UnprocessableEntityError extends AppError {
+  /**
+   * @param {string} message
+   */
+  constructor(message) {
+    super(message, 422);
   }
 }
 
@@ -69,5 +106,8 @@ module.exports = {
   AppError,
   ValidationError,
   NotFoundError,
+  UnprocessableEntityError,
   DataAccessError,
+  AuthenticationError,
+  AuthorizationError,
 };

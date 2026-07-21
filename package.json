@@ -16,16 +16,23 @@
   "author": "Mate academy",
   "license": "GPL-3.0",
   "dependencies": {
+    "bcrypt": "6.0.0",
     "close-with-grace": "2.5.0",
+    "cookie-parser": "1.4.7",
     "cors": "^2.8.5",
     "dotenv": "17.4.2",
     "express": "^5.2.1",
+    "jsonwebtoken": "9.0.3",
+    "nodemailer": "9.0.3",
     "pg": "8.22.0"
   },
   "devDependencies": {
     "@mate-academy/eslint-config": "latest",
     "@mate-academy/scripts": "0.9.9",
+    "@types/bcrypt": "6.0.0",
+    "@types/cookie-parser": "1.4.10",
     "@types/express": "5.0.6",
+    "@types/jsonwebtoken": "9.0.10",
     "@types/pg": "8.20.0",
     "eslint": "^8.57.0",
     "eslint-plugin-jest": "^28.6.0",
@@ -38,6 +45,8 @@
     "projectType": "javascript"
   },
   "jest": {
-    "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"]
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ]
   }
 }
