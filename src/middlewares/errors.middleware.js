@@ -1,6 +1,10 @@
 'use strict';
 
-const { ValidationError, AppError } = require('../errors/app.errors');
+const {
+  ValidationError,
+  AppError,
+  AuthorizationError,
+} = require('../errors/app.errors');
 
 /**
  * @param {Error} err
@@ -19,6 +23,10 @@ const errorsMiddleware = (err, _req, res, _next) => {
     });
 
     return;
+  }
+
+  if (err instanceof AuthorizationError) {
+    res.clearCookie('refreshToken');
   }
 
   if (err instanceof AppError) {

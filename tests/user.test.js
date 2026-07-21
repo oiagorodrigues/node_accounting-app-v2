@@ -8,21 +8,33 @@ const UNKNOWN_UUID = '00000000-0000-4000-8000-000000000000';
 describe('User', () => {
   let server;
   let api;
+  let emailSeq;
 
   beforeEach(() => {
     server = createServer();
     api = supertest(server);
+    emailSeq = 0;
   });
+
+  /**
+   * @param {Record<string, unknown>} [overrides]
+   */
+  const registerUser = (overrides = {}) => {
+    emailSeq += 1;
+
+    return api.post('/auth/register').send({
+      name: 'John Doe',
+      email: `user${emailSeq}@example.com`,
+      password: 'secret123',
+      ...overrides,
+    });
+  };
 
   describe('createUser', () => {
     it('should create a new user', async () => {
       const name = 'John Doe';
 
-      const response = await api
-        .post('/users')
-        .send({
-          name,
-        })
+      const response = await registerUser({ name })
         .expect(201)
         .expect('Content-Type', /application\/json/);
 
@@ -30,12 +42,13 @@ describe('User', () => {
         expect.objectContaining({
           id: expect.any(String),
           name,
+          email: 'user1@example.com',
         }),
       );
     });
 
     it('should return 400 if name is not provided', async () => {
-      await api.post('/users').send({}).expect(400);
+      await api.post('/auth/register').send({}).expect(400);
     });
   });
 
@@ -59,17 +72,15 @@ describe('User', () => {
         },
       ];
 
-      const createdUsers = await Promise.all(
-        users.map(async (user) => {
-          const res = await api
-            .post('/users')
-            .send(user)
-            .expect(201)
-            .expect('Content-Type', /application\/json/);
+      const createdUsers = [];
 
-          return res.body;
-        }),
-      );
+      for (const user of users) {
+        const res = await registerUser(user)
+          .expect(201)
+          .expect('Content-Type', /application\/json/);
+
+        createdUsers.push(res.body);
+      }
 
       const response = await api
         .get('/users')
@@ -88,9 +99,7 @@ describe('User', () => {
     it('should return user', async () => {
       const name = 'John Doe';
 
-      const createdUser = await api.post('/users').send({
-        name,
-      });
+      const createdUser = await registerUser({ name });
 
       const response = await api
         .get(`/users/${createdUser.body.id}`)
@@ -112,6 +121,8 @@ describe('User', () => {
         .patch(`/users/${UNKNOWN_UUID}`)
         .send({
           name: 'John Doe',
+          email: 'missing@example.com',
+          password: 'secret123',
         })
         .expect(404);
     });
@@ -119,16 +130,18 @@ describe('User', () => {
     it('should update user', async () => {
       const name = 'John Doe';
 
-      const createdUser = await api.post('/users').send({
-        name,
-      });
+      const createdUser = await registerUser({ name });
 
       const newName = 'Jane Doe';
+      const email = 'jane@example.com';
+      const password = 'newsecret123';
 
       const response = await api
         .patch(`/users/${createdUser.body.id}`)
         .send({
           name: newName,
+          email,
+          password,
         })
         .expect(200)
         .expect('Content-Type', /application\/json/);
@@ -137,6 +150,7 @@ describe('User', () => {
         expect.objectContaining({
           id: createdUser.body.id,
           name: newName,
+          email,
         }),
       );
     });
@@ -150,9 +164,7 @@ describe('User', () => {
     it('should delete user', async () => {
       const name = 'John Doe';
 
-      const createdUser = await api.post('/users').send({
-        name,
-      });
+      const createdUser = await registerUser({ name });
 
       await api.delete(`/users/${createdUser.body.id}`).expect(204);
 

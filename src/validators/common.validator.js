@@ -35,12 +35,47 @@ const validateString = (value, message) => {
  * @param {string} message
  * @returns {string | undefined}
  */
+const validateEmail = (value, message) => {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    return message;
+  }
+};
+
+/**
+ * @param {string} value
+ * @param {string} message
+ * @returns {string | undefined}
+ */
 const validateUuid = (value, message) => {
   if (
     !/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
       value,
     )
   ) {
+    return message;
+  }
+};
+
+/**
+ * @param {string} value
+ * @param {number} minLength
+ * @param {string} message
+ * @returns {string | undefined}
+ */
+const validateMinLength = (value, minLength, message) => {
+  if (value.length < minLength) {
+    return message;
+  }
+};
+
+/**
+ * @param {string} value
+ * @param {number} maxLength
+ * @param {string} message
+ * @returns {string | undefined}
+ */
+const validateMaxLength = (value, maxLength, message) => {
+  if (value.length > maxLength) {
     return message;
   }
 };
@@ -81,7 +116,10 @@ const assertValid = (result) => {
 module.exports = {
   validateRequired,
   validateString,
+  validateEmail,
   validateUuid,
+  validateMinLength,
+  validateMaxLength,
   parseIdParam,
   assertValid,
 };

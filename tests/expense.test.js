@@ -8,19 +8,33 @@ const UNKNOWN_UUID = '00000000-0000-4000-8000-000000000000';
 describe('Expense', () => {
   let server;
   let api;
+  let emailSeq;
 
   beforeEach(() => {
     server = createServer();
     api = supertest(server);
+    emailSeq = 0;
   });
+
+  /**
+   * @param {Record<string, unknown>} [overrides]
+   */
+  const registerUser = (overrides = {}) => {
+    emailSeq += 1;
+
+    return api.post('/auth/register').send({
+      name: 'John Doe',
+      email: `user${emailSeq}@example.com`,
+      password: 'secret123',
+      ...overrides,
+    });
+  };
 
   describe('createExpense', () => {
     it('should create a new expense', async () => {
       const {
         body: { id: userId },
-      } = await api.post('/users').send({
-        name: 'John Doe',
-      });
+      } = await registerUser();
 
       const expenseData = {
         userId,
@@ -59,7 +73,7 @@ describe('Expense', () => {
         note: 'I need a new laptop',
       };
 
-      await api.post('/expenses').send(expenseData).expect(404);
+      await api.post('/expenses').send(expenseData).expect(400);
     });
   });
 
@@ -76,9 +90,7 @@ describe('Expense', () => {
     it('should return all expenses', async () => {
       const {
         body: { id: userId },
-      } = await api.post('/users').send({
-        name: 'John Doe',
-      });
+      } = await registerUser();
 
       const expenseData = {
         userId,
@@ -109,15 +121,11 @@ describe('Expense', () => {
     it('should return all expenses for a user', async () => {
       const {
         body: { id: userId },
-      } = await api.post('/users').send({
-        name: 'John Doe',
-      });
+      } = await registerUser();
 
       const {
         body: { id: userId2 },
-      } = await api.post('/users').send({
-        name: 'John Doe',
-      });
+      } = await registerUser({ name: 'Jane Doe' });
 
       const expenseData = {
         userId,
@@ -153,9 +161,7 @@ describe('Expense', () => {
     it('should return all expenses between dates', async () => {
       const {
         body: { id: userId },
-      } = await api.post('/users').send({
-        name: 'John Doe',
-      });
+      } = await registerUser();
 
       const expenseData = {
         userId,
@@ -194,9 +200,7 @@ describe('Expense', () => {
     it('should return all expenses by category', async () => {
       const {
         body: { id: userId },
-      } = await api.post('/users').send({
-        name: 'John Doe',
-      });
+      } = await registerUser();
 
       const expenseData = {
         userId,
@@ -234,9 +238,7 @@ describe('Expense', () => {
     it('should return expense', async () => {
       const {
         body: { id: userId },
-      } = await api.post('/users').send({
-        name: 'John Doe',
-      });
+      } = await registerUser();
 
       const expenseData = {
         userId,
@@ -271,9 +273,7 @@ describe('Expense', () => {
     it('should update expense', async () => {
       const {
         body: { id: userId },
-      } = await api.post('/users').send({
-        name: 'John Doe',
-      });
+      } = await registerUser();
 
       const expenseData = {
         userId,
@@ -312,9 +312,7 @@ describe('Expense', () => {
     it('should delete expense', async () => {
       const {
         body: { id: userId },
-      } = await api.post('/users').send({
-        name: 'John Doe',
-      });
+      } = await registerUser();
 
       const expenseData = {
         userId,

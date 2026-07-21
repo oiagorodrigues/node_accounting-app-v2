@@ -1,13 +1,14 @@
 /**
  * @typedef {import('express').Request} Request
  * @typedef {import('express').Response} Response
+ *
+ * @typedef {import('../dtos/user.dto').User} User
  */
 
 const usersService = require('../services/users.service');
 const {
-  parseCreateUserBody,
-  parsePatchUserInput,
   parseUserIdParam,
+  parsePatchUserInput,
 } = require('../validators/users.validator');
 const { assertValid } = require('../validators/common.validator');
 
@@ -27,11 +28,10 @@ const getUsers = async (req, res) => {
  * @param {Response} res
  * @returns {Promise<void>}
  */
-const createUser = async (req, res) => {
-  const { name } = assertValid(parseCreateUserBody(req.body));
-  const user = await usersService.createUser(name);
+const getAllActiveUsers = async (req, res) => {
+  const users = await usersService.getAllActive();
 
-  res.status(201).json(user);
+  res.json(users);
 };
 
 /**
@@ -65,17 +65,17 @@ const deleteUser = async (req, res) => {
  * @returns {Promise<void>}
  */
 const patchUser = async (req, res) => {
-  const { id, name } = assertValid(
+  const { id, ...payload } = assertValid(
     parsePatchUserInput(req.params, req.body),
   );
-  const user = await usersService.patchUser(id, name);
+  const user = await usersService.patchUser(id, payload);
 
   res.json(user);
 };
 
 module.exports = {
   getUsers,
-  createUser,
+  getAllActiveUsers,
   getUserById,
   deleteUser,
   patchUser,
