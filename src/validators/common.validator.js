@@ -63,7 +63,7 @@ const validateUuid = (value, message) => {
  * @returns {string | undefined}
  */
 const validateMinLength = (value, minLength, message) => {
-  if (value.length < minLength) {
+  if (typeof value !== 'string' || value.length < minLength) {
     return message;
   }
 };
@@ -75,7 +75,7 @@ const validateMinLength = (value, minLength, message) => {
  * @returns {string | undefined}
  */
 const validateMaxLength = (value, maxLength, message) => {
-  if (value.length > maxLength) {
+  if (typeof value !== 'string' || value.length > maxLength) {
     return message;
   }
 };

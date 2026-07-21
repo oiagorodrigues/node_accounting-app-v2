@@ -20,25 +20,21 @@ const { fieldErrors, compactErrors } = require('./utils');
  * @returns {AuthRegisterResult}
  */
 const parseAuthRegisterBody = (body) => {
-  const { name = '', email, password } = body;
+  const { name, email, password } = body;
 
-  /* @type {string[] | undefined} */
-  let emailErrors;
-  /** @type {string[] | undefined} */
-  let passwordErrors;
-
-  if (email) {
-    emailErrors = fieldErrors(
+  const errors = compactErrors({
+    name: fieldErrors(
+      validateRequired(name, 'Name is required'),
+      validateString(name, 'Name must be a string'),
+    ),
+    email: fieldErrors(
       validateRequired(email, 'Email is required'),
       validateString(email, 'Email must be a string'),
       typeof email === 'string'
         ? validateEmail(email, 'Email is invalid')
         : undefined,
-    );
-  }
-
-  if (password) {
-    passwordErrors = fieldErrors(
+    ),
+    password: fieldErrors(
       validateRequired(password, 'Password is required'),
       validateString(password, 'Password must be a string'),
       validateMinLength(
@@ -46,13 +42,7 @@ const parseAuthRegisterBody = (body) => {
         6,
         'Password must be at least 6 characters long',
       ),
-    );
-  }
-
-  const errors = compactErrors({
-    name: fieldErrors(validateString(name, 'Name must be a string')),
-    email: emailErrors,
-    password: passwordErrors,
+    ),
   });
 
   if (errors) {
@@ -62,7 +52,7 @@ const parseAuthRegisterBody = (body) => {
   return {
     ok: true,
     payload: {
-      name,
+      name: /** @type {string} */ (name),
       email: /** @type {string} */ (email),
       password: /** @type {string} */ (password),
     },
