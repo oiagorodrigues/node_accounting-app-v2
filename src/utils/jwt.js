@@ -15,7 +15,7 @@ const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || '';
  * @returns {string}
  */
 const generateAccessToken = (user) => {
-  return jwt.sign(user, SECRET, { expiresIn: '1m' });
+  return jwt.sign(user, SECRET, { expiresIn: '10m' });
 };
 
 /**
@@ -23,7 +23,7 @@ const generateAccessToken = (user) => {
  * @returns {string}
  */
 const generateRefreshToken = (user) => {
-  return jwt.sign(user, REFRESH_SECRET, { expiresIn: '90s' });
+  return jwt.sign(user, REFRESH_SECRET, { expiresIn: '7d' });
 };
 
 /**
